@@ -1,36 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hitster QR Game</title>
-    <style> 
-      body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; } 
-      video { width: 100%; max-width: 400px; border: 2px solid #333; border-radius: 10px; } #status { margin-top: 10px; font-weight: bold; } 
-    </style> 
-  </head> 
-  <body> 
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+        padding: 20px;
+      }
+      video {
+        width: 100%;
+        max-width: 400px;
+        border: 2px solid #333;
+        border-radius: 10px;
+      }
+      #status {
+        margin-top: 10px;
+        font-weight: bold;
+      }
+      button {
+        margin-top: 20px;
+        padding: 10px 15px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
     <h1>Hitster QR Game</h1>
-    <video id="cam"></video>
-    <div id="status">Waiting for QR code...</div> <!-- QR scanner library --> 
+    <video id="cam" autoplay playsinline></video>
+    <div id="status">Waiting for QR code...</div>
+    <button id="login">Login to Spotify</button>
+
     <script src="https://unpkg.com/qr-scanner/qr-scanner.umd.min.js"></script>
-    <script> 
-      const videoElem = document.getElementById('cam'); 
-      const statusElem = document.getElementById('status'); 
-      const backendURL = 'https://my-hitster-backend.com/play'; // <-- replace with your backend 
-      const scanner = new QrScanner(videoElem, async result => { const trackUri = result.data.trim(); // expects spotify:track:... 
-                                                                statusElem.textContent = `QR scanned: ${trackUri}. Sending to backend...`; 
-                                                                try { 
-                                                                  const response = await fetch(backendURL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ uri: trackUri }) }); 
-                                                                     if (response.ok) 
-                                                                     { statusElem.textContent = `✅ Playing track on your device!`; } 
-                                                                     else 
-                                                                     { const text = await response.text(); statusElem.textContent = `❌ Error: ${response.status} ${text}`; } 
-                                                                    } 
-                                                                catch (err) 
-                                                                { console.error(err); statusElem.textContent = `❌ Network error: ${err.message}`; } 
-                                                               }); 
-      scanner.start(); 
+    <script>
+      const backendURL = "https://YOUR-VERCEL-PROJECT.vercel.app/api";
+
+      const videoElem = document.getElementById("cam");
+      const statusElem = document.getElementById("status");
+      const loginBtn = document.getElementById("login");
+
+      loginBtn.addEventListener("click", () => {
+        window.location.href = `${backendURL}/login`;
+      });
+
+      const scanner = new QrScanner(videoElem, async result => {
+        const trackUri = result.data.trim();
+        statusElem.textContent = `QR scanned: ${trackUri}. Sending to backend...`;
+
+        try {
+          const response = await fetch(`${backendURL}/play`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ uri: trackUri }),
+          });
+
+          if (response.ok) {
+            statusElem.textContent = "✅ Playing track!";
+          } else {
+            const text = await response.text();
+            statusElem.textContent = `❌ Error: ${response.status} ${text}`;
+          }
+        } catch (err) {
+          statusElem.textContent = `❌ Network error: ${err.message}`;
+        }
+      });
+
+      setTimeout(() => {
+        scanner
+          .start()
+          .catch(err => (statusElem.textContent = "❌ Camera failed: " + err.message));
+      }, 200);
     </script>
   </body>
 </html>
