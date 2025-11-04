@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "express": "^4.19.2",
     "node-fetch": "^3.3.2",
-    "dotenv": "^16.4.5",
     "querystring": "^0.2.1"
   }
 }
